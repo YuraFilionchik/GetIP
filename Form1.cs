@@ -12,23 +12,39 @@ namespace GetIP
     public partial class Form1 : Form
     {
         Scanner scanner = new Scanner();
-        const string formName = "IP checker";
-        const string statusOnline = " = Online";
-        const string statusOffline = " = Offline";
-        const string textNotFound = "No matches found";
+        const string formName = "IP фильтр";
+        const string statusOnline = " = Доступен";
+        const string statusOffline = " = Не доступен";
+        const string textNotFound = "Совпадений не найдено";
         Color colorOnline = Color.Green;
         Color colorOffline = Color.Red;
         const string searchTemplate = @"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b";
+        bool showTextOnline;
 
         public Form1()
         {
             InitializeComponent();
             this.Text = formName;
             scanner.ScannerEvent += new EventHandler<ScannerEventArgs>(scanner_ScannerEvent);
+            showTextOnline = checkBox1.Checked;
         }
 
 
         private void tbInput_TextChanged(object sender, EventArgs e)
+        {
+            ParseTextBox();
+        }
+
+        //result of ping
+        void scanner_ScannerEvent(object sender, ScannerEventArgs e)
+        {
+            tbOutput.Invoke((Action)(() =>
+            {
+                DisplayIP(e.Address, e.Status);
+            }));
+        }
+
+        void ParseTextBox()
         {
             Regex regex = new Regex(searchTemplate);
             MatchCollection matches = regex.Matches(tbInput.Text);
@@ -45,19 +61,11 @@ namespace GetIP
             {
                 tbOutput.Text = textNotFound;
             }
+
             if (ipList.Count == 0) return;
             tbOutput.Lines = ipList.Distinct().ToArray();
             scanner.StopPings();
             scanner.ScanParallel(ipList.ToArray());
-        }
-
-        //result of ping
-        void scanner_ScannerEvent(object sender, ScannerEventArgs e)
-        {
-            tbOutput.Invoke((Action)(() =>
-            {
-                DisplayIP(e.Address, e.Status);
-            }));
         }
 
         private void DisplayIP(IPAddress address, IPStatus status)
@@ -86,7 +94,7 @@ namespace GetIP
                     tbOutput.SelectionLength = lineLength;
                     string oldText = tbOutput.Lines[i].ToString();
 
-                    if (!oldText.Contains(addText))
+                    if (!oldText.Contains(addText) && showTextOnline)
                     {
                         string newText = oldText + addText;
                         tbOutput.SelectedText = newText;
@@ -97,9 +105,14 @@ namespace GetIP
                     tbOutput.DeselectAll();
                 }
             }
-            
-                
+
+
         }
 
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            showTextOnline = checkBox1.Checked;
+            ParseTextBox();
+        }
     }
 }
