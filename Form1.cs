@@ -32,7 +32,7 @@ namespace GetIP
 
         private void tbInput_TextChanged(object sender, EventArgs e)
         {
-            ParseTextBox();
+            ParseTextBox(tbInput.Text, searchTemplate);
         }
 
         //result of ping
@@ -44,10 +44,11 @@ namespace GetIP
             }));
         }
 
-        void ParseTextBox()
+        void ParseTextBox(string text, string searchTemplate)
         {
+
             Regex regex = new Regex(searchTemplate);
-            MatchCollection matches = regex.Matches(tbInput.Text);
+            MatchCollection matches = regex.Matches(text);
             List<string> ipList = new List<string>();
             if (matches.Count > 0)
             {
@@ -112,7 +113,7 @@ namespace GetIP
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             showTextOnline = checkBox1.Checked;
-            ParseTextBox();
+            ParseTextBox(tbInput.Text, searchTemplate);
         }
     }
 }
